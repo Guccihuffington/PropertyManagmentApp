@@ -1,0 +1,270 @@
+Table Users {
+  UserID int [pk, increment]
+  FullName varchar(255) [not null]
+  Email varchar(255) [not null, unique]
+  PasswordHash varchar(255) [not null]
+  Role varchar(50) [not null]
+  Phone varchar(50)
+}
+
+Table Properties {
+  PropertyID int [pk, increment]
+  PropertyManagerID int [not null, ref: > Users.UserID]
+  PropertyName varchar(255) [not null]
+  Address varchar(255) [not null]
+  City varchar(100) [not null]
+  State varchar(50) [not null]
+  ZipCode varchar(20) [not null]
+}
+
+Table Units {
+  UnitID int [pk, increment]
+  PropertyID int [not null, ref: > Properties.PropertyID]
+  UnitNumber varchar(50) [not null]
+  Bedrooms int
+  Bathrooms decimal(3,1)
+  MonthlyBaseRent decimal(10,2) [not null]
+
+  indexes {
+    (PropertyID, UnitNumber) [unique]
+  }
+}
+
+Table Tenants {
+  TenantID int [pk, increment]
+  UserID int [not null, unique, ref: > Users.UserID]
+}
+
+Table Leases {
+  LeaseID int [pk, increment]
+  UnitID int [not null, ref: > Units.UnitID]
+  StartDate date [not null]
+  EndDate date [not null]
+  MonthlyRent decimal(10,2) [not null]
+  SecurityDeposit decimal(10,2)
+  LeaseDocument varchar(500)
+  Status varchar(50) [not null]
+}
+
+Table LeaseTenants {
+  LeaseID int [not null, ref: > Leases.LeaseID]
+  TenantID int [not null, ref: > Tenants.TenantID]
+
+  indexes {
+    (LeaseID, TenantID) [pk]
+  }
+}
+
+Table RentSchedule {
+  RentScheduleID int [pk, increment]
+  LeaseID int [not null, ref: > Leases.LeaseID]
+  DueDate date [not null]
+  AmountDue decimal(10,2) [not null]
+}
+
+Table PaymentHistory {
+  PaymentID int [pk, increment]
+  RentScheduleID int [not null, ref: > RentSchedule.RentScheduleID]
+  PaymentDate datetime [not null]
+  AmountPaid decimal(10,2) [not null]
+  PaymentMethod varchar(50)
+}
+
+Table LateFees {
+  LateFeeID int [pk, increment]
+  RentScheduleID int [not null, ref: > RentSchedule.RentScheduleID]
+  Amount decimal(10,2) [not null]
+  DateApplied datetime [not null]
+  Reason varchar(255)
+  Paid boolean [not null, default: false]
+}
+
+Table Notifications {
+  NotificationID int [pk, increment]
+  UserID int [not null, ref: > Users.UserID]
+  Title varchar(255) [not null]
+  Message text [not null]
+  Type varchar(50) [not null]
+  CreatedDate datetime [not null]
+  ReadDate datetime
+  RelatedEntityID int
+  RelatedEntityType varchar(50)
+}
+
+Table MaintenanceRequests {
+  RequestID int [pk, increment]
+  UnitID int [not null, ref: > Units.UnitID]
+  TenantID int [ref: > Tenants.TenantID]
+  Description text [not null]
+  Priority varchar(50) [not null]
+  Status varchar(50) [not null]
+  CreatedDate datetime [not null]
+}
+
+Table MaintenanceProjects {
+  ProjectID int [pk, increment]
+  RequestID int [ref: > MaintenanceRequests.RequestID]
+  PropertyManagerID int [not null, ref: > Users.UserID]
+  Description text [not null]
+  Status varchar(50) [not null]
+  StartDate datetime
+  CompletionDate datetime
+}
+
+Table Contractors {
+  ContractorID int [pk, increment]
+  CompanyName varchar(255) [not null]
+  Address varchar(255)
+  Phone varchar(50)
+  Email varchar(255)
+  LicenseNumber varchar(100)
+  InsuranceExpiration date
+}
+
+Table ContractorEmployees {
+  EmployeeID int [pk, increment]
+  ContractorID int [not null, ref: > Contractors.ContractorID]
+  UserID int [not null, unique, ref: > Users.UserID]
+  JobTitle varchar(100)
+}
+
+Table ContractorBids {
+  BidID int [pk, increment]
+  ProjectID int [not null, ref: > MaintenanceProjects.ProjectID]
+  ContractorID int [not null, ref: > Contractors.ContractorID]
+  Amount decimal(10,2) [not null]
+  Description text
+  SubmittedDate datetime [not null]
+  Status varchar(50) [not null]
+}
+
+Table WorkOrders {
+  WorkOrderID int [pk, increment]
+  ProjectID int [not null, ref: > MaintenanceProjects.ProjectID]
+  ContractorID int [not null, ref: > Contractors.ContractorID]
+  BidID int [ref: > ContractorBids.BidID]
+  AssignedEmployeeID int [ref: > ContractorEmployees.EmployeeID]
+  Description text [not null]
+  Status varchar(50) [not null]
+  ScheduledDate datetime
+  StartDate datetime
+  CompletionDate datetime
+}
+
+Table WorkLogs {
+  WorkLogID int [pk, increment]
+  WorkOrderID int [not null, ref: > WorkOrders.WorkOrderID]
+  EmployeeID int [not null, ref: > ContractorEmployees.EmployeeID]
+  Date datetime [not null]
+  Description text
+  HoursWorked decimal(5,2)
+}
+
+Table GPSRecords {
+  GPSRecordID int [pk, increment]
+  WorkOrderID int [not null, ref: > WorkOrders.WorkOrderID]
+  EmployeeID int [not null, ref: > ContractorEmployees.EmployeeID]
+  Latitude decimal(10,7) [not null]
+  Longitude decimal(10,7) [not null]
+  Timestamp datetime [not null]
+}
+
+Table WorkPhotos {
+  PhotoID int [pk, increment]
+  WorkOrderID int [not null, ref: > WorkOrders.WorkOrderID]
+  EmployeeID int [not null, ref: > ContractorEmployees.EmployeeID]
+  PhotoURL varchar(500) [not null]
+  PhotoType varchar(50)
+  Description varchar(255)
+  Timestamp datetime [not null]
+}
+
+Table Materials {
+  MaterialID int [pk, increment]
+  WorkOrderID int [not null, ref: > WorkOrders.WorkOrderID]
+  Name varchar(255) [not null]
+  Quantity decimal(10,2) [not null]
+  UnitCost decimal(10,2) [not null]
+}
+
+Table Invoices {
+  InvoiceID int [pk, increment]
+  WorkOrderID int [not null, ref: > WorkOrders.WorkOrderID]
+  ContractorID int [not null, ref: > Contractors.ContractorID]
+  InvoiceNumber varchar(100) [not null]
+  InvoiceDate date [not null]
+  DueDate date
+  Amount decimal(10,2) [not null]
+  Status varchar(50) [not null]
+}
+
+Table Expenses {
+  ExpenseID int [pk, increment]
+  ProjectID int [ref: > MaintenanceProjects.ProjectID]
+  WorkOrderID int [ref: > WorkOrders.WorkOrderID]
+  PropertyID int [not null, ref: > Properties.PropertyID]
+  Description varchar(255) [not null]
+  Amount decimal(10,2) [not null]
+  ExpenseDate date [not null]
+  Category varchar(100)
+}
+
+// ============================================================
+// Added by PROPFLOW for features in the new design.
+// The 22 original tables above are unchanged.
+// ============================================================
+
+Table LandlordCodes {
+  ManagerID int [pk, ref: > Users.UserID]
+  Code varchar(8) [not null, unique]
+}
+
+Table LandlordContractors {
+  ManagerID int [not null, ref: > Users.UserID]
+  ContractorID int [not null, ref: > Contractors.ContractorID]
+  Status varchar(20) [not null]
+
+  indexes {
+    (ManagerID, ContractorID) [pk]
+  }
+}
+
+Table UnitInvites {
+  UnitID int [pk, ref: > Units.UnitID]
+  Code varchar(8) [not null, unique]
+}
+
+Table RemovedProperties {
+  PropertyID int [pk, ref: > Properties.PropertyID]
+}
+
+Table Documents {
+  DocumentID int [pk, increment]
+  LeaseID int [not null, ref: > Leases.LeaseID]
+  UploadedByUserID int [not null, ref: > Users.UserID]
+  Name varchar(255) [not null]
+  DocType varchar(50) [not null]
+  FilePath varchar(500) [not null]
+  SizeBytes int [not null]
+  UploadedDate datetime [not null]
+}
+
+Table BidDetails {
+  BidID int [pk, ref: > ContractorBids.BidID]
+  EstimatedDays varchar(50)
+  Warranty varchar(100)
+  LineItems text [not null]
+}
+
+Table JobDetails {
+  WorkOrderID int [pk, ref: > WorkOrders.WorkOrderID]
+  CompletionNotes text
+  PaymentMethod varchar(20)
+  Paid boolean [not null, default: false]
+}
+
+Table Codes {
+  CodeKey varchar(300) [pk]
+  Code varchar(6) [not null]
+  ExpiresAt datetime [not null]
+}
