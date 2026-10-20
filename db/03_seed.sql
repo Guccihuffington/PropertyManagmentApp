@@ -23,7 +23,26 @@ BEGIN
     (2, 'manager@example.com',    'SEED_PLACEHOLDER_NOT_A_REAL_HASH', 'Morgan', 'Reyes',  '812-555-0100'),
     (1, 'alice.tenant@example.com','SEED_PLACEHOLDER_NOT_A_REAL_HASH', 'Alice',  'Johnson','812-555-0101'),
     (3, 'bob.plumbing@example.com','SEED_PLACEHOLDER_NOT_A_REAL_HASH', 'Bob',    'Carter', '812-555-0102'),
-    (4, 'admin@example.com',      'SEED_PLACEHOLDER_NOT_A_REAL_HASH', 'Ada',    'Admin',  NULL);
+    (4, 'admin@example.com',      'SEED_PLACEHOLDER_NOT_A_REAL_HASH', 'Ada',    'Admin',  NULL),
+    (1, 'tenant02@example.com', 'SEED_PLACEHOLDER_NOT_A_REAL_HASH', 'James',    'Smith',    '812-555-0102'),
+    (1, 'tenant03@example.com', 'SEED_PLACEHOLDER_NOT_A_REAL_HASH', 'Emma',     'Brown',    '812-555-0103'),
+    (1, 'tenant04@example.com', 'SEED_PLACEHOLDER_NOT_A_REAL_HASH', 'Liam',     'Davis',    '812-555-0104'),
+    (1, 'tenant05@example.com', 'SEED_PLACEHOLDER_NOT_A_REAL_HASH', 'Olivia',   'Wilson',   '812-555-0105'),
+    (1, 'tenant06@example.com', 'SEED_PLACEHOLDER_NOT_A_REAL_HASH', 'Noah',     'Miller',   '812-555-0106'),
+    (1, 'tenant07@example.com', 'SEED_PLACEHOLDER_NOT_A_REAL_HASH', 'Ava',      'Taylor',   '812-555-0107'),
+    (1, 'tenant08@example.com', 'SEED_PLACEHOLDER_NOT_A_REAL_HASH', 'Ethan',    'Anderson', '812-555-0108'),
+    (1, 'tenant09@example.com', 'SEED_PLACEHOLDER_NOT_A_REAL_HASH', 'Sophia',   'Thomas',   '812-555-0109'),
+    (1, 'tenant10@example.com', 'SEED_PLACEHOLDER_NOT_A_REAL_HASH', 'Lucas',    'Jackson',  '812-555-0110'),
+    (1, 'tenant11@example.com', 'SEED_PLACEHOLDER_NOT_A_REAL_HASH', 'Isabella', 'White',    '812-555-0111'),
+    (1, 'tenant12@example.com', 'SEED_PLACEHOLDER_NOT_A_REAL_HASH', 'Mason',    'Harris',   '812-555-0112'),
+    (1, 'tenant13@example.com', 'SEED_PLACEHOLDER_NOT_A_REAL_HASH', 'Mia',      'Martin',   '812-555-0113'),
+    (1, 'tenant14@example.com', 'SEED_PLACEHOLDER_NOT_A_REAL_HASH', 'Logan',    'Thompson', '812-555-0114'),
+    (1, 'tenant15@example.com', 'SEED_PLACEHOLDER_NOT_A_REAL_HASH', 'Amelia',   'Garcia',   '812-555-0115'),
+    (1, 'tenant16@example.com', 'SEED_PLACEHOLDER_NOT_A_REAL_HASH', 'Elijah',   'Martinez', '812-555-0116'),
+    (1, 'tenant17@example.com', 'SEED_PLACEHOLDER_NOT_A_REAL_HASH', 'Charlotte','Robinson', '812-555-0117'),
+    (1, 'tenant18@example.com', 'SEED_PLACEHOLDER_NOT_A_REAL_HASH', 'James',    'Clark',    '812-555-0118'),
+    (1, 'tenant19@example.com', 'SEED_PLACEHOLDER_NOT_A_REAL_HASH', 'Evelyn',   'Lewis',    '812-555-0119'),
+    (1, 'tenant20@example.com', 'SEED_PLACEHOLDER_NOT_A_REAL_HASH', 'Benjamin', 'Lee',      '812-555-0120');
 
     INSERT INTO dbo.UserDevices (UserID, DeviceToken, Platform) VALUES
     (2, 'fake-device-token-abc123', 'iOS');
@@ -37,8 +56,12 @@ BEGIN
     (1, '102', 'Vacant');
 
     -- Tenant and lease
-    INSERT INTO dbo.Tenants (UserID, EmergencyContact) VALUES
-    (2, 'Pat Johnson - 812-555-0199');
+    INSERT INTO dbo.Tenants (UserID, EmergencyContact)
+    SELECT
+        UserID,
+        CONCAT('Emergency Contact - ', FirstName, ' Family')
+    FROM dbo.Users
+    WHERE Email LIKE 'tenant[0-9][0-9]@example.com';
 
     INSERT INTO dbo.Leases (UnitID, TenantID, StartDate, EndDate, RentAmount, SecurityDeposit, DueDayOfMonth, LateFeeGraceDays, LateFeeAmount, IsActive) VALUES
     (1, 1, '2026-01-01', '2026-12-31', 850.00, 850.00, 1, 3, 50.00, 1);
